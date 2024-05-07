@@ -1,0 +1,106 @@
+import heapq
+
+class Node:
+    def __init__(self, state, parent=None, move=None):
+        self.state = state
+        self.parent = parent
+        self.move = move
+        self.cost = 0
+
+    def __lt__(self, other):
+        return self.cost < other.cost
+
+def manhattan_distance(state, goal_state):
+    distance = 0
+    for i in range(3):
+        for j in range(3):
+            if state[i][j] != goal_state[i][j] and state[i][j] != 0:
+                x, y = divmod(state[i][j] - 1, 3)
+                distance += abs(x - i) + abs(y - j)
+    return distance
+
+def get_neighbors(node):
+    neighbors = []
+    zero_pos = find_zero(node.state)
+    zero_x, zero_y = zero_pos[0], zero_pos[1]
+    
+    for move in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+        new_x, new_y = zero_x + move[0], zero_y + move[1]
+        if 0 <= new_x < 3 and 0 <= new_y < 3:
+            new_state = swap(node.state, zero_x, zero_y, new_x, new_y)
+            neighbors.append(Node(new_state, node, move))
+    
+    return neighbors
+
+def find_zero(state):
+    for i in range(3):
+        for j in range(3):
+            if state[i][j] == 0:
+                return (i, j)
+
+def swap(state, x1, y1, x2, y2):
+    new_state = [row[:] for row in state]
+    new_state[x1][y1], new_state[x2][y2] = new_state[x2][y2], new_state[x1][y1]
+    return new_state
+
+def print_state(state):
+    for row in state:
+        print(' '.join(map(str, row)))
+
+def a_star(initial_state, goal_state):
+    open_list = []
+    closed_list = set()
+
+    start_node = Node(initial_state)
+    start_node.cost = manhattan_distance(start_node.state, goal_state)
+    heapq.heappush(open_list, start_node)
+
+    while open_list:
+        current_node = heapq.heappop(open_list)
+        closed_list.add(tuple(map(tuple, current_node.state)))
+
+        if current_node.state == goal_state:
+            path = []
+            while current_node.parent:
+                path.append(current_node.move)
+                current_node = current_node.parent
+            return path[::-1]
+
+        for neighbor in get_neighbors(current_node):
+            if tuple(map(tuple, neighbor.state)) not in closed_list:
+                neighbor.cost = manhattan_distance(neighbor.state, goal_state) + current_node.cost + 1
+                heapq.heappush(open_list, neighbor)
+                closed_list.add(tuple(map(tuple, neighbor.state)))
+
+    return None
+
+# Example usage:
+initial_state = [[1, 2, 3],
+                 [4, 0, 5],
+                 [6, 7, 8]]
+
+goal_state = [[1, 2, 3],
+              [4, 5, 6],
+              [7, 8, 0]]
+
+solution = a_star(initial_state, goal_state)
+if solution:
+    print("Solution found:")
+    current_state = initial_state
+    print_state(current_state)
+    for move in solution:
+        print()
+        zero_pos = find_zero(current_state)
+        new_x, new_y = zero_pos[0] + move[0], zero_pos[1] + move[1]
+        current_state = swap(current_state, zero_pos[0], zero_pos[1], new_x, new_y)
+        print_state(current_state)
+        if move == (0, 1):
+            print("Move right")
+        elif move == (0, -1):
+            print("Move left")
+        elif move == (1, 0):
+            print("Move down")
+        elif move == (-1, 0):
+            print("Move up")
+else:
+    print("No solution found")

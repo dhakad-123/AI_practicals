@@ -1,0 +1,70 @@
+#nqueen using branch bound
+def printSolution(board):
+    # Print the N x N board
+    for i in range(N):
+        for j in range(N):
+            print(board[i][j], end=" ")
+        print()
+
+def isSafe(row, col, slashCode, backslashCode, rowLookup, slashCodeLookup, backslashCodeLookup):
+    # Check if it is safe to place a queen at position (row, col)
+    if (slashCodeLookup[slashCode[row][col]] or
+        backslashCodeLookup[backslashCode[row][col]] or
+        rowLookup[row]):
+        return False
+    return True
+
+def solveNQueensUtil(board, col, slashCode, backslashCode, rowLookup, slashCodeLookup, backslashCodeLookup):
+    # Recursive function to solve the N-Queens problem
+    if col >= N:
+        return True
+    
+    # Try placing a queen in each row of the current column
+    for i in range(N):
+        if isSafe(i, col, slashCode, backslashCode, rowLookup, slashCodeLookup, backslashCodeLookup):
+            board[i][col] = 1
+            rowLookup[i] = True
+            slashCodeLookup[slashCode[i][col]] = True
+            backslashCodeLookup[backslashCode[i][col]] = True
+            
+            # Recur to place queens in the next columns
+            if solveNQueensUtil(board, col + 1, slashCode, backslashCode, rowLookup, slashCodeLookup, backslashCodeLookup):
+                return True
+            
+            # If placing queen in board[i][col] doesn't lead to a solution, then backtrack
+            board[i][col] = 0
+            rowLookup[i] = False
+            slashCodeLookup[slashCode[i][col]] = False
+            backslashCodeLookup[backslashCode[i][col]] = False
+            
+    # If queen cannot be placed in any row in this column col, return False
+    return False
+
+def solveNQueens():
+    # Initialize the chessboard and helper matrices
+    board = [[0] * N for _ in range(N)]
+    slashCode = [[0] * N for _ in range(N)]
+    backslashCode = [[0] * N for _ in range(N)]
+    rowLookup = [False] * N
+    x = 2 * N - 1
+    slashCodeLookup = [False] * x
+    backslashCodeLookup = [False] * x
+    
+    # Initialize helper matrices
+    for rr in range(N):
+        for cc in range(N):
+            slashCode[rr][cc] = rr + cc
+            backslashCode[rr][cc] = rr - cc + N-1
+
+    # Call the recursive function to solve the N-Queens problem
+    if not solveNQueensUtil(board, 0, slashCode, backslashCode, rowLookup, slashCodeLookup, backslashCodeLookup):
+        print("Solution does not exist")
+        return False
+
+    # Print the solution
+    printSolution(board)
+    return True
+
+# Driver Code
+N = 8  # Change N as needed
+solveNQueens()

@@ -1,0 +1,35 @@
+#Implement Depth First Search algorithm, use an undirected graph and develop
+#a recursive algorithm for searching all the vertices.
+
+class Graph:
+    def __init__(self):
+        self.graph={}
+    def add_edge(self,u,v):
+        if u not in self.graph:
+            self.graph[u]=[]
+        if v not in self.graph:
+            self.graph[v]=[]
+        self.graph[u].append(v)
+        self.graph[v].append(u)
+    def dfs(self,v,visited):
+        visited.add(v)
+        print(v,end=' ')
+        for neb in self.graph[v]: #gets neighbour of current vertex
+            if neb not in visited:
+                self.dfs(neb,visited)
+                
+    def dfs_traversal(self,start):#it provides empty visted set and start vertex to dfs
+        visited=set()
+        self.dfs(start,visited)
+        
+        
+g=Graph()
+n=int(input("no of edges"))
+for i in range(n):
+    u,v=map(int,input("enter vertex u v:").split())
+    g.add_edge(u,v)
+print(g.graph)
+start=int(input("enter start vertex"))
+g.dfs_traversal(start)
+
+    
